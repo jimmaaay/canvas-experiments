@@ -51,7 +51,8 @@ window.addEventListener('load', () => {
       // console.log('setting color', color);
       ctx.fillStyle = 'red'
       ctx.arc(x, y, radius, 0, Math.PI * radius * 2);
-      // ctx.fill();
+      ctx.fill();
+      ctx.closePath();
     }
 
     const end = () => {
@@ -85,7 +86,7 @@ window.addEventListener('load', () => {
       return !circle.isFinished();
     });
 
-    ctx.fill();
+    // ctx.fill();
 
     if (circles.length === 0) {
       isLoopRunning = false;
