@@ -24,3 +24,18 @@ html, body, canvas {
 canvas {
   width: 100%;
 }
+
+
+nav {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: 15px;
+  background: rgba(0,0,0,0.4);
+}
+
+nav a {
+  display: block;
+  padding: 3px 5px;
+  color: #fff;
+}
