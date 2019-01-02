@@ -9,6 +9,7 @@ export default class Mixin {
   public ctx: CanvasRenderingContext2D;
   public getWidth: Function;
   public getHeight: Function;
+  private toastElement: HTMLElement | null;
 
   private rafID: null | number;
 
@@ -19,6 +20,7 @@ export default class Mixin {
     this.getHeight = getHeight;
     this.rafID = null;
     this.drawWrapper = this.drawWrapper.bind(this);
+    this.toastElement = null;
   }
 
   public draw() {
@@ -36,11 +38,23 @@ export default class Mixin {
     this.rafID = null;
     this.draw();
   }
+
+  public setToast(message: string) {
+    this.toastElement = document.createElement('span');
+    this.toastElement.textContent = message;
+    this.toastElement.classList.add('toast');
+    document.body.appendChild(this.toastElement);
+  }
   
   public destroy() {
     this.beforeDestroy();
     if (this.rafID !== null) cancelAnimationFrame(this.rafID);
     this.ctx.clearRect(0, 0, this.getWidth(), this.getHeight());
+
+    if (this.toastElement != null) {
+      if (this.toastElement.parentElement == null) throw new Error(`Could not remove toast`);
+      this.toastElement.parentElement.removeChild(this.toastElement);
+    }
   }
 
 }
