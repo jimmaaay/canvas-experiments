@@ -23,7 +23,7 @@ export default class Mixin {
     this.toastElement = null;
   }
 
-  public draw() {
+  public draw(redraw: boolean = false) {
     throw new Error(`draw method has not been overwritten`);
   }
 

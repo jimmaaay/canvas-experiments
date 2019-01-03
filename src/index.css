@@ -23,6 +23,7 @@ html, body, canvas {
 
 canvas {
   width: 100%;
+  display: block;
 }
 
 

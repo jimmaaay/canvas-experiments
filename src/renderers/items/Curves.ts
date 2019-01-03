@@ -1,10 +1,10 @@
 import Mixin, { Options } from '../Mixin';
 
 const canvas = document.querySelector('canvas') as HTMLCanvasElement;
-const POINTER_RADIUS = 4;
+const POINTER_RADIUS = 10;
 const POINTER_DUMMY = 2; // how mant pixels each side of the pointer, with it counting as clicked
 
-export default class Basic extends Mixin {
+export default class Curves extends Mixin {
 
   private points: any;
 
@@ -16,11 +16,7 @@ export default class Basic extends Mixin {
     const width = this.getWidth();
     const height = this.getHeight();
 
-    this.points = {
-      start: [ width / 2, height / 2 ],
-      end: [ width / 2, 0 ],
-      control: [ 5, height / 2 ],
-    };
+    this.setStartingPositions(width, height);
 
     this.selectedPoint = false;
 
@@ -35,6 +31,14 @@ export default class Basic extends Mixin {
     canvas.addEventListener('pointerup', this.pointerUp);
   }
 
+  public setStartingPositions(width: number, height: number) {
+    this.points = {
+      start: [ width / 2, height / 2 ],
+      end: [ width / 2, POINTER_RADIUS ],
+      control: [ POINTER_RADIUS, height / 2 ],
+    };
+  }
+
   public pointerMove(e: PointerEvent) {
     const { pageX, pageY } = e;
   
@@ -46,14 +50,14 @@ export default class Basic extends Mixin {
     }
 
     canvas.style.cursor = 'grab';
-    
 
     this.points[this.selectedPoint][0] = pageX;
     this.points[this.selectedPoint][1] = pageY;
     this.queueRaf();
   }
 
-  public pointerUp(e: PointerEvent) {
+  public pointerUp() {
+    if (this.selectedPoint !== false) this.queueRaf();
     this.selectedPoint = false;
   }
 
@@ -93,6 +97,7 @@ export default class Basic extends Mixin {
     const selectedPoint = this.getHoveredPoint(pageX, pageY);
 
     this.selectedPoint = selectedPoint;
+    if (selectedPoint !== false) this.queueRaf();
   }
 
   public beforeDestroy() {
@@ -102,7 +107,27 @@ export default class Basic extends Mixin {
     canvas.style.cursor = '';
   }
 
-  public draw() {
+  // Checks if the points are within bounds. If not they will be reset to the starting positions
+  public checkPointBounds() {
+    const width = this.getWidth();
+    const height = this.getHeight();
+
+    const shouldReset = Object.keys(this.points)
+      .reduce((shouldReset, key) => {
+        if (shouldReset) return true;
+        const [x, y] = this.points[key];
+        if (x > width) return true;
+        if (y > height) return true;
+        return false;
+      }, false);
+
+    if (shouldReset) this.setStartingPositions(width, height);
+  }
+
+
+  public draw(redraw: boolean) {
+    if (redraw) this.checkPointBounds();
+
     const { ctx } = this;
     const width = this.getWidth();
     const height = this.getHeight();
@@ -121,20 +146,24 @@ export default class Basic extends Mixin {
     ctx.stroke();
     ctx.closePath();
 
-
-
+    // Draws the points which can be dragged about
     Object.keys(this.points)
-      .map((key) => this.points[key])
-      .forEach(([x, y]) => {
+      .forEach((key) => {
+        const [x, y] = this.points[key];
+        const isBeingDragged = key === this.selectedPoint;
+
         ctx.beginPath();
         ctx.arc(x, y, POINTER_RADIUS, 0, Math.PI * 2);
         ctx.fill();
+
+        if (isBeingDragged) {
+          const xStart = x - POINTER_RADIUS - POINTER_DUMMY / 2;
+          const yStart = y - POINTER_RADIUS - POINTER_DUMMY / 2;
+          const dimensions = POINTER_RADIUS * 2 + POINTER_DUMMY / 2;
+          ctx.strokeRect(xStart, yStart, dimensions, dimensions);
+        }
+
         ctx.closePath();
       });
-
-    // ctx.beginPath();
-    // ctx.arc(this.controlPointX, this.controlPointY, 4, 0, Math.PI * 2);
-    // ctx.fill();
-    // ctx.closePath();
   }
 }
