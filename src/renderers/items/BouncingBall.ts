@@ -14,11 +14,17 @@ class Vector {
     this.y += vector.y;
   }
 
+  public limitX(max: number, min: number) {
+    if (this.x > max) this.x = max;
+    if (this.x < min) this.x = min;
+  }
+
 }
 
 export default class BouncingBall extends Mixin {
   private location: Vector;
   private velocity: Vector;
+  private acceleration: Vector;
 
   constructor(props: Options) {
     super(props);
@@ -26,6 +32,7 @@ export default class BouncingBall extends Mixin {
     const width = this.getWidth();
     this.location = new Vector(width / 2, height / 2);
     this.velocity = new Vector(3, 3);
+    this.acceleration = new Vector(0.1, 0);
   }
 
   public draw() {
@@ -36,12 +43,14 @@ export default class BouncingBall extends Mixin {
 
     ctx.clearRect(0, 0, width, height);
 
+    this.velocity.add(this.acceleration);
     this.location.add(this.velocity);
     if (
       this.location.x + ballRadius > width || 
       this.location.x - ballRadius < 0
     ) {
       this.velocity.x *= -1;
+      this.acceleration.x *= -1;
     } 
 
     if (
@@ -49,7 +58,10 @@ export default class BouncingBall extends Mixin {
       this.location.y - ballRadius < 0
     ) {
       this.velocity.y *= -1;
+      this.acceleration.y *= -1;
     }
+
+    this.velocity.limitX(50, -50);
 
     ctx.beginPath();
     ctx.moveTo(this.location.x, this.location.y);

@@ -58,6 +58,7 @@ export default (canvas: HTMLCanvasElement) => {
       }
 
       activeRenderer = new renderers[name]({
+        canvas,
         ctx,
         getWidth,
         getHeight,

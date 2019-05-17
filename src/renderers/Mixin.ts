@@ -1,4 +1,5 @@
 export interface Options {
+  canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   getHeight: Function;
   getWidth: Function;
@@ -6,6 +7,7 @@ export interface Options {
 
 export default class Mixin {
 
+  public canvas: HTMLCanvasElement;
   public ctx: CanvasRenderingContext2D;
   public getWidth: Function;
   public getHeight: Function;
@@ -14,8 +16,9 @@ export default class Mixin {
   private rafID: null | number;
 
   constructor(options: Options) {
-    const { ctx, getWidth, getHeight } = options;
+    const { canvas, ctx, getWidth, getHeight } = options;
     this.ctx = ctx;
+    this.canvas = canvas;
     this.getWidth = getWidth;
     this.getHeight = getHeight;
     this.rafID = null;
