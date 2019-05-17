@@ -64,7 +64,7 @@ export default class PacMan extends Mixin {
 
     if (percentageAnimationCompleted >= 1) {
       this.startTimestamp = false;
-      this.direction = this.direction === 'OPEN'
+      this.mouthDirection = this.mouthDirection === 'OPEN'
         ? 'CLOSE'
         : 'OPEN';
     }
