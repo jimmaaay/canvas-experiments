@@ -1,3 +1,4 @@
+import { getRandomNumber } from './helpers';
 class Vector {
   public x: number;
   public y: number;
@@ -5,6 +6,14 @@ class Vector {
   constructor(x: number, y: number) {
     this.x = x;
     this.y = y;
+  }
+
+  static add(vector1: Vector, vector2: Vector): Vector {
+    return new Vector(vector1.x + vector2.x, vector1.y + vector2.y);
+  }
+
+  static sub(vector1: Vector, vector2: Vector): Vector {
+    return new Vector(vector1.x - vector2.x, vector1.y - vector2.y);
   }
 
   public add(vector: Vector): void {
@@ -27,9 +36,11 @@ class Vector {
     this.y /= scale;
   }
 
-  public limit(limit: number) {
-    if (this.x > limit) this.x = limit;
-    if (this.y > limit) this.y = limit;
+  public limit(minLimit: number, maxLimit: number) {
+    if (this.x < minLimit) this.x = minLimit;
+    if (this.y < minLimit) this.y = minLimit;
+    if (this.x > maxLimit) this.x = maxLimit;
+    if (this.y > maxLimit) this.y = maxLimit;
   }
 
   /**
@@ -50,6 +61,12 @@ class Vector {
   public normalize() {
     const magnitude = this.mag();
     this.div(magnitude);
+  }
+
+  public random2D() {
+    this.x = getRandomNumber(0, 100);
+    this.y = getRandomNumber(0, 100);
+    this.normalize();
   }
 
 }

@@ -1,14 +1,13 @@
 import Mixin, { Options } from '../Mixin';
 import Vector from '../../Vector';
-
-const getRandomNumber = (min: number, max: number): number => {
-  return Math.random() * (max - min) + min;
-}
+import { getRandomNumber } from '../../helpers';
 
 class Mover {
   private location: Vector;
   private velocity: Vector;
   private acceleration: Vector;
+  private mouse: Vector;
+  private dir: Vector;
   private canvasWidth: number;
   private canvasHeight: number;
   private ballRadius: number;
@@ -20,16 +19,22 @@ class Mover {
 
     this.location = new Vector(canvasWidth / 2, canvasHeight / 2);
     this.velocity = new Vector(0, 0);
-    this.acceleration = new Vector(0.1, 0.2);
+    this.acceleration = new Vector(0, 0);
+    this.mouse = new Vector(0, 0);
+    this.dir = new Vector(0, 0);
   }
 
-  public update(canvasWidth: number, canvasHeight: number) {
+  public update(canvasWidth: number, canvasHeight: number, mouseVector: Vector) {
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
-    this.acceleration.x = getRandomNumber(-0.2, 0.2);
-    this.acceleration.y = getRandomNumber(-0.2, 0.2);
+    this.mouse = mouseVector;
+
+    this.dir = Vector.sub(this.mouse, this.location);
+    this.dir.normalize();
+  
+    this.acceleration = this.dir;
     this.velocity.add(this.acceleration);
-    this.velocity.limit(10);
+    this.velocity.limit(-10, 10);
     this.location.add(this.velocity);
   }
 
@@ -63,15 +68,21 @@ class Mover {
 
 export default class Ball extends Mixin {
  private mover: Mover;
+ private mouse: Vector;
 
   constructor(props: Options) {
     super(props);
     const height = this.getHeight();
     const width = this.getWidth();
+    this.mouse = new Vector(0, 0);
     this.mover = new Mover({
       canvasWidth: width,
       canvasHeight: height,
       ballRadius: 50,
+    });
+
+    this.canvas.addEventListener('mousemove', (e: MouseEvent) => {
+      this.mouse = new Vector(e.clientX, e.clientY);
     });
   }
 
@@ -83,8 +94,8 @@ export default class Ball extends Mixin {
 
     ctx.clearRect(0, 0, width, height);
 
-    this.mover.update(width, height);
-    this.mover.checkEdges();
+    this.mover.update(width, height, this.mouse);
+    // this.mover.checkEdges();
     this.mover.display(ctx);
 
     this.queueRaf();
