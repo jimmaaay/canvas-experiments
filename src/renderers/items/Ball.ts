@@ -17,7 +17,12 @@ class Mover {
     this.canvasHeight = canvasHeight;
     this.ballRadius = ballRadius;
 
-    this.location = new Vector(canvasWidth / 2, canvasHeight / 2);
+    const middleX = canvasWidth / 2;
+    const middleY = canvasHeight / 2;
+    const startX = middleX + getRandomNumber(-100, 100);
+    const startY = middleY + getRandomNumber(-100, 100);
+
+    this.location = new Vector(startX, startY);
     this.velocity = new Vector(0, 0);
     this.acceleration = new Vector(0, 0);
     this.mouse = new Vector(0, 0);
@@ -61,13 +66,14 @@ class Mover {
     ctx.beginPath();
     ctx.arc(this.location.x, this.location.y, this.ballRadius, 0, Math.PI * 2, false);
     ctx.fill();
+    ctx.stroke();
     ctx.closePath();
   }
 }
 
 
 export default class Ball extends Mixin {
- private mover: Mover;
+ private balls: Mover[];
  private mouse: Vector;
 
   constructor(props: Options) {
@@ -75,11 +81,16 @@ export default class Ball extends Mixin {
     const height = this.getHeight();
     const width = this.getWidth();
     this.mouse = new Vector(0, 0);
-    this.mover = new Mover({
-      canvasWidth: width,
-      canvasHeight: height,
-      ballRadius: 50,
-    });
+
+    this.balls = Array
+      .from(new Array(30))
+      .map(() => {
+        return new Mover({
+          canvasWidth: width,
+          canvasHeight: height,
+          ballRadius: 20,
+        });
+      });
 
     this.canvas.addEventListener('mousemove', (e: MouseEvent) => {
       this.mouse = new Vector(e.clientX, e.clientY);
@@ -93,10 +104,13 @@ export default class Ball extends Mixin {
     const width = this.getWidth();
 
     ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = 'rgba(0, 255, 0, 0.5)';
 
-    this.mover.update(width, height, this.mouse);
-    // this.mover.checkEdges();
-    this.mover.display(ctx);
+
+    this.balls.forEach((ball) => {
+      ball.update(width, height, this.mouse);
+      ball.display(ctx);
+    });
 
     this.queueRaf();
   }
