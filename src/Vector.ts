@@ -16,6 +16,10 @@ class Vector {
     return new Vector(vector1.x - vector2.x, vector1.y - vector2.y);
   }
 
+  static mult(vector: Vector, scale: number): Vector {
+    return new Vector(vector.x * scale, vector.y * scale);
+  }
+
   public add(vector: Vector): void {
     this.x += vector.x;
     this.y += vector.y;
