@@ -20,7 +20,7 @@ class Mover {
   public location: Victor;
   private velocity: Victor;
   private acceleration: Victor;
-  private mass: number; 
+  public mass: number; 
   private canvasWidth: number;
   private canvasHeight: number;
 
@@ -61,7 +61,8 @@ class Mover {
 
     if (location.y + mass > canvasHeight) {
       location.y = canvasHeight - mass;
-      velocity.multiplyScalarY(-1);
+      // velocity.multiplyScalarY(-1); // will keep the balls bouncing forever
+      velocity.multiplyScalarY(-0.95); // balls will eventually stop bouncing
     } else if (location.y - mass < 0) {
       location.y = 0 + mass;
       velocity.multiplyScalarY(-1);
@@ -107,12 +108,13 @@ export default class Basic extends Mixin {
     const { ctx } = this;
     const height = this.getHeight();
     const width = this.getWidth();
-    const gravity = new Victor(0, 1);
 
     ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
     ctx.clearRect(0, 0, width, height);
 
     this.balls.forEach((ball) => {
+      // By multiplying the force by the mass it creates more of a gravity like simulation
+      const gravity = new Victor(0, 1 * ball.mass);
       const leftOriginatingWind = new Victor(4, 0);
       const rightOriginatingWind = new Victor(-4, 0);
       const percentageToRight = ball.location.x / width;
