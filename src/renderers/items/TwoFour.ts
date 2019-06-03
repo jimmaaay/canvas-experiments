@@ -9,19 +9,19 @@ interface MoverArgs {
   y: number;
 }
 
+interface AccelerationArea {
+  fill: string;
+  xStart: number;
+  xEnd: number;
+  accelerationValue: number;
+}
+
 interface FrictionArea {
   fill: string;
   xStart?: number;
   xEnd?: number;
   frictionValue: number;
 };
-
-
-const getRandomInt = (min: number, max: number) => {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
-}
 
 class Mover {
   public location: Victor;
@@ -65,8 +65,7 @@ class Mover {
 
     if (location.y + mass > canvasHeight) {
       location.y = canvasHeight - mass;
-      velocity.multiplyScalarY(-1); // will keep the balls bouncing forever
-      // velocity.multiplyScalarY(-0.95); // balls will eventually stop bouncing
+      velocity.multiplyScalarY(-1);
     } else if (location.y - mass < 0) {
       location.y = 0 + mass;
       velocity.multiplyScalarY(-1);
@@ -96,23 +95,22 @@ export default class TwoFour extends Mixin {
 
   private balls: Mover[];
   private frictionAreas: FrictionArea[];
+  private accelerationAreas: AccelerationArea[];
+
 
   constructor(props: Options) {
     super(props);
     const height = this.getHeight();
     const width = this.getWidth();
+
+    this.accelerationAreas = [{
+      xStart: 0,
+      xEnd: 200,
+      accelerationValue: 9,
+      fill: 'rgba(0, 255, 000, 0.3)',
+    }];
+
     this.frictionAreas = [
-      {
-        xStart: 0,
-        xEnd: 200,
-        /**
-         * Negative friction value just ends up being acceleration.
-         * E.g -9 = a vector with x value of 9.
-         * TODO: Should be put in an accelerationAreas array instead
-         */
-        frictionValue: -9,
-        fill: 'rgba(0, 255, 000, 0.3)',
-      },
       {
         xStart: 200,
         xEnd: 300,
@@ -159,14 +157,22 @@ export default class TwoFour extends Mixin {
       ctx.fillText(frictionValue.toString(), xStart + (xEnd - xStart) / 2, height / 2 );
     });
 
+    this.accelerationAreas.forEach((area) => {
+      const { xStart, xEnd, fill, accelerationValue } = area;
+      ctx.fillStyle = fill;
+      ctx.fillRect(xStart, 0, xEnd - xStart, height);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '30px sans-serif';
+      ctx.fillText(accelerationValue.toString(), xStart + (xEnd - xStart) / 2, height / 2 );
+    });
+
     ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
 
     this.balls.forEach((ball) => {
       // By multiplying the force by the mass it creates more of a gravity like simulation
       const gravity = new Victor(0, 1 * ball.mass);
-      const percentageToRight = ball.location.x / width;
-      const percentageToLeft = 1 - percentageToRight;
-      // const frictionValue = 0.05;
+
       const { frictionValue } = this.frictionAreas.reduce((value: FrictionArea, area) => {
         const { x } = ball.location;
         if (area.xStart == null || area.xEnd == null) return value;
@@ -177,18 +183,29 @@ export default class TwoFour extends Mixin {
         fill: 'none',
       });
 
-      let friction;
+      const { accelerationValue } = this.accelerationAreas.reduce((value: AccelerationArea, area) => {
+        const { x } = ball.location;
+        if (area.xStart == null || area.xEnd == null) return value;
+        if (x >= area.xStart && x <= area.xEnd) return area;
+        return value;
+      }, {
+        xStart: 0,
+        xEnd: 0,
+        accelerationValue: 0,
+        fill: 'none',
+      });
 
-      if (frictionValue > 0) {
-      friction = ball.velocity
+      const friction = ball.velocity
         .clone()
         .multiplyScalar(-1)
         .normalize()
-        .multiplyScalar(frictionValue);
-      } else {
-        friction = new Victor(Math.abs(frictionValue), 0);
-      }
+        .multiplyScalarX(frictionValue);
+
+      friction.y = 0;
       
+      const acceleration = new Victor(accelerationValue, 0);
+      
+      ball.applyForce(acceleration);
       ball.applyForce(friction);
 
       ball.applyForce(gravity);
