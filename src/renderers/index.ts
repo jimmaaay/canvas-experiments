@@ -48,7 +48,7 @@ export default (canvas: HTMLCanvasElement) => {
     listRenderers() {
       return Object.keys(renderers);
     },
-    changeActive(name: string): void {
+    async changeActive(name: string) {
       if (! renderers.hasOwnProperty(name)) {
         throw new Error(`No renderer ${name}`);
       }
@@ -63,6 +63,8 @@ export default (canvas: HTMLCanvasElement) => {
         getWidth,
         getHeight,
       });
+
+      await activeRenderer.awaitSetup();
 
       activeRenderer.draw();
     },

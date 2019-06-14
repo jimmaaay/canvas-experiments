@@ -32,6 +32,10 @@ export default class Mixin {
 
   public beforeDestroy() {}
 
+  public awaitSetup(): Promise<any> {
+    return Promise.resolve(true);
+  }
+
   public queueRaf() {
     if (this.rafID !== null) return;
     this.rafID = requestAnimationFrame(this.drawWrapper);

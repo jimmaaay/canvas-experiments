@@ -44,7 +44,7 @@ class Liquid {
     this.y = y;
     this.width = width;
     this.height = height;
-    this.dragAmount = 0.0075;
+    this.dragAmount = 0.005;
   }
 
   public update({ x, y, width, height }: LiquidArgs) {
